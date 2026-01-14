@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AppScreen, AppSettings, Question, CATEGORY_NAMES } from './types';
 import { getQuestions } from './data';
@@ -18,13 +17,17 @@ const App: React.FC = () => {
   const [settings, setSettings] = useState<AppSettings>(() => {
     const saved = localStorage.getItem('chuvashia_settings');
     if (saved) {
-      return { ...JSON.parse(saved), imageBaseUrl: JSON.parse(saved).imageBaseUrl || '' };
+      const parsed = JSON.parse(saved);
+      if (!parsed.imageBaseUrl || parsed.imageBaseUrl === '') {
+        parsed.imageBaseUrl = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/';
+      }
+      return parsed;
     }
     return {
       sound: true,
       music: true,
       diceEnabled: true,
-      imageBaseUrl: ''
+      imageBaseUrl: 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/'
     };
   });
 
@@ -50,7 +53,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-screen max-w-md mx-auto bg-white shadow-2xl overflow-hidden relative">
+    <div className="app-screen-container overflow-hidden">
       {screen === AppScreen.MENU && (
         <Menu onNavigate={handleNavigate} />
       )}
@@ -59,6 +62,7 @@ const App: React.FC = () => {
         <CategorySelector 
           onSelectCategory={handleCategorySelect} 
           onBack={() => setScreen(AppScreen.MENU)} 
+          onNavigateToSettings={() => setScreen(AppScreen.SETTINGS)}
         />
       )}
 
@@ -67,6 +71,7 @@ const App: React.FC = () => {
           questions={categoryQuestions} 
           categoryName={CATEGORY_NAMES[currentCategory] || 'Викторина'}
           onBack={() => setScreen(AppScreen.CATEGORIES)}
+          onNavigateToSettings={() => setScreen(AppScreen.SETTINGS)}
           imageBaseUrl={settings.imageBaseUrl}
         />
       )}
@@ -80,7 +85,10 @@ const App: React.FC = () => {
       )}
 
       {screen === AppScreen.DICE && (
-        <Dice onBack={() => setScreen(AppScreen.MENU)} />
+        <Dice 
+          onBack={() => setScreen(AppScreen.MENU)} 
+          onNavigateToSettings={() => setScreen(AppScreen.SETTINGS)}
+        />
       )}
     </div>
   );

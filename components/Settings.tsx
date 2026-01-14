@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { ArrowLeft, Volume2, Music, Dice5, FolderOpen, Info, Globe, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Volume2, Music, Globe, ChevronDown, ChevronUp, HelpCircle, Sparkles, RotateCcw, UploadCloud } from 'lucide-react';
 import { AppSettings } from '../types';
 
 interface SettingsProps {
@@ -10,113 +10,101 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ settings, onUpdateSettings, onBack }) => {
+  const [showHelp, setShowHelp] = useState(false);
+  const [justTransformed, setJustTransformed] = useState(false);
+
+  const MY_REPO_ROOT = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/';
+  const ICON_BASE = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/images/Figma/Icons/';
+  const PLASHKA_URL = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/images/Figma/Icons/plashka_chuvashiya.png';
+
+  const headerStyle: React.CSSProperties = {
+    width: '100%',
+    height: '5.73%',
+    display: 'grid',
+    gridTemplateColumns: '8.796% 10.185% 7.87% 46.296% 7.87% 10.185% 8.796%',
+    alignItems: 'center',
+    marginTop: '3.2%',
+    marginBottom: '4%'
+  };
+
   const toggle = (key: keyof AppSettings) => {
     if (typeof settings[key] === 'boolean') {
-      onUpdateSettings({
-        ...settings,
-        [key]: !settings[key]
-      });
+      onUpdateSettings({ ...settings, [key]: !settings[key] });
     }
   };
 
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onUpdateSettings({
-      ...settings,
-      imageBaseUrl: e.target.value
-    });
+  const cleanGithubUrl = (input: string): string => {
+    let url = input.trim();
+    if (!url) return '';
+    if (url.includes('github.com')) {
+      url = url.replace('github.com', 'raw.githubusercontent.com').replace('/tree/', '/').replace('/blob/', '/');
+      const parts = url.split('/');
+      if (parts.length >= 6) url = parts.slice(0, 6).join('/') + '/';
+    }
+    if (url && !url.endsWith('/')) url += '/';
+    return url;
   };
 
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawInput = e.target.value;
+    const cleaned = cleanGithubUrl(rawInput);
+    onUpdateSettings({ ...settings, imageBaseUrl: cleaned });
+    if (cleaned !== rawInput.trim() && cleaned !== '') {
+      setJustTransformed(true);
+      setTimeout(() => setJustTransformed(false), 2000);
+    }
+  };
+
+  const isCorrectFormat = settings.imageBaseUrl.includes('raw.githubusercontent.com');
+
   return (
-    <div className="flex flex-col h-full bg-slate-50">
-      <div className="bg-red-700 text-white p-4 flex items-center gap-4 shadow-lg sticky top-0 z-20">
-        <button onClick={onBack} className="p-2 hover:bg-red-800 rounded-full transition active:scale-90">
-          <ArrowLeft size={24} />
+    <div className="flex flex-col h-full relative overflow-hidden">
+      {/* Top Bar - Сетка */}
+      <div style={headerStyle}>
+        <div />
+        <button onClick={onBack} className="active:scale-90 transition-transform h-full w-full flex items-center justify-center">
+          <img src={`${ICON_BASE}Button_settings.png`} alt="Settings" className="w-full h-full object-contain" />
         </button>
-        <h2 className="text-xl font-bold">Настройки</h2>
+        <div />
+        <div className="h-full w-full flex items-center justify-center">
+          <img src={PLASHKA_URL} alt="Моя Чувашия" className="w-full h-[81.8%] object-contain" />
+        </div>
+        <div />
+        <button className="active:scale-90 transition-transform h-full w-full flex items-center justify-center">
+          <img src={`${ICON_BASE}Button_menu.png`} alt="Menu" className="w-full h-full object-contain" />
+        </button>
+        <div />
       </div>
 
-      <div className="p-6 overflow-y-auto space-y-6">
-        {/* Audio Section */}
-        <section className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
-            <Volume2 size={18} className="text-slate-400" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Интерфейс и звук</span>
-          </div>
-          
-          <div className="divide-y divide-slate-100">
-            <div className="flex items-center justify-between p-5">
-              <div className="flex items-center gap-4">
-                <div className="bg-blue-50 p-3 rounded-2xl text-blue-600">
-                  <Music size={22} />
-                </div>
-                <span className="font-bold text-slate-700">Музыка</span>
-              </div>
-              <button 
-                onClick={() => toggle('music')}
-                className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ${settings.music ? 'bg-green-500' : 'bg-slate-300'}`}
-              >
+      <div className="flex-1 overflow-y-auto space-y-6 pb-24 px-[8.8%]">
+        <h2 className="text-[#5d3a24] text-2xl font-black uppercase text-center mb-4">Настройки</h2>
+        <section className="bg-white/80 backdrop-blur rounded-[2rem] border-4 border-[#5d3a24] overflow-hidden shadow-xl">
+          <div className="p-4 bg-[#5d3a24] flex items-center gap-2 text-white"><Volume2 size={20} /><span className="text-sm font-black uppercase tracking-widest">Звук</span></div>
+          <div className="p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4"><div className="bg-[#9ec4af] p-3 rounded-2xl text-[#5d3a24]"><Music size={22} /></div><span className="font-black text-[#5d3a24]">Музыка</span></div>
+              <button onClick={() => toggle('music')} className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ${settings.music ? 'bg-green-500' : 'bg-slate-300'}`}>
                 <div className={`w-6 h-6 rounded-full bg-white shadow-sm transform transition-transform duration-300 ${settings.music ? 'translate-x-6' : ''}`} />
               </button>
             </div>
-
-            <div className="flex items-center justify-between p-5">
-              <div className="flex items-center gap-4">
-                <div className="bg-yellow-50 p-3 rounded-2xl text-yellow-600">
-                  <Dice5 size={22} />
-                </div>
-                <span className="font-bold text-slate-700">Игральный кубик</span>
-              </div>
-              <button 
-                onClick={() => toggle('diceEnabled')}
-                className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ${settings.diceEnabled ? 'bg-green-500' : 'bg-slate-300'}`}
-              >
-                <div className={`w-6 h-6 rounded-full bg-white shadow-sm transform transition-transform duration-300 ${settings.diceEnabled ? 'translate-x-6' : ''}`} />
-              </button>
-            </div>
           </div>
         </section>
-
-        {/* Cloud Hosting Section */}
-        <section className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
-            <Globe size={18} className="text-slate-400" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Облачное хранилище</span>
-          </div>
-          
+        <section className="bg-white/80 backdrop-blur rounded-[2rem] border-4 border-[#5d3a24] overflow-hidden shadow-xl">
+          <div className="p-4 bg-[#5d3a24] flex items-center gap-2 text-white"><Globe size={20} /><span className="text-sm font-black uppercase tracking-widest">Контент (GitHub)</span></div>
           <div className="p-5">
-            <div className="flex items-start gap-3 mb-4 bg-blue-50 p-4 rounded-2xl border border-blue-100">
-              <Info size={20} className="text-blue-500 shrink-0 mt-0.5" />
-              <div className="text-sm text-blue-800 leading-relaxed">
-                Google Диск <strong>не подходит</strong> для хранения папок с картинками. Используйте <strong>GitHub</strong>, <strong>Imgur</strong> или свой хостинг.
-              </div>
-            </div>
-
-            <label className="block text-sm font-bold text-slate-600 mb-2 ml-1">
-              URL к папке images:
-            </label>
-            <input 
-              type="text" 
-              value={settings.imageBaseUrl}
-              onChange={handleUrlChange}
-              placeholder="https://mysite.com/game/"
-              className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-red-500 focus:ring-0 outline-none transition-all text-slate-700 font-mono text-sm mb-4"
-            />
-
-            <div className="flex items-start gap-2 text-[11px] text-slate-400 bg-slate-50 p-3 rounded-xl border border-dashed border-slate-200">
-              <AlertCircle size={14} className="shrink-0 mt-0.5" />
-              <span>
-                Пример правильной ссылки: <br/>
-                <code className="text-red-400">https://raw.githubusercontent.com/user/repo/main/</code>
-              </span>
+            <div className="mb-4">
+              <label className="text-sm font-black text-[#5d3a24] ml-1 uppercase block mb-2">Базовый путь:</label>
+              <input type="text" value={settings.imageBaseUrl} onChange={handleUrlChange} placeholder="Вставьте ссылку..." className={`w-full p-4 bg-white/50 border-4 rounded-2xl outline-none transition-all text-[#5d3a24] font-mono text-[10px] ${isCorrectFormat ? 'border-green-500' : 'border-[#5d3a24]'}`} />
             </div>
           </div>
         </section>
-        
-        <div className="text-center py-4">
-          <p className="text-slate-300 text-[10px] font-bold uppercase tracking-widest">
-            Моя Чувашия • v1.2 Release
-          </p>
-        </div>
+      </div>
+
+      <div className="absolute bottom-6 left-0 w-full flex justify-around items-center px-[8.8%]">
+        <button onClick={onBack} className="w-16 h-16 active:scale-90 transition-transform">
+          <img src={`${ICON_BASE}Button_back.png`} alt="Back" className="w-full h-full object-contain" />
+        </button>
+        <div className="text-[#5d3a24] text-[12px] font-bold opacity-30">Версия 0.0.1</div>
       </div>
     </div>
   );
