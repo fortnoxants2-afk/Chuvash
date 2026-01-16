@@ -44,7 +44,16 @@
         width: auto;
         position: relative;
         overflow: hidden;
-        border-radius: 0; /* Убрано скругление по просьбе */
+        border-radius: 0;
+      }
+
+      /* Скрытие полосы прокрутки */
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
       }
     </style>
   <script type="importmap">
@@ -57,8 +66,10 @@
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
   <body>
     <div id="root"></div>
-  </body>
+  <script type="module" src="/index.tsx"></script>
+</body>
 </html>

@@ -1,50 +1,59 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Question } from '../types';
-import { X } from 'lucide-react';
 
 interface QuizProps {
-  questions: Question[];
+  question: Question;
+  categoryId: string;
   categoryName: string;
+  onAdvance: () => void;
   onBack: () => void;
   onNavigateToSettings: () => void;
+  onNavigateToDice: () => void;
   imageBaseUrl?: string;
 }
 
-const Ornament = () => (
-  <>
-    <div className="ornament-corner corner-tl w-6 h-6" />
-    <div className="ornament-corner corner-tr w-6 h-6" />
-    <div className="ornament-corner corner-bl w-6 h-6" />
-    <div className="ornament-corner corner-br w-6 h-6" />
-  </>
-);
-
-const Quiz: React.FC<QuizProps> = ({ questions, categoryName, onBack, onNavigateToSettings, imageBaseUrl }) => {
-  const ICON_BASE = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/images/Figma/Icons/';
-  const PLASHKA_URL = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/images/Figma/Icons/plashka_chuvashiya.png';
+const Quiz: React.FC<QuizProps> = ({ 
+  question, 
+  categoryId, 
+  categoryName, 
+  onAdvance,
+  onBack, 
+  onNavigateToSettings, 
+  onNavigateToDice, 
+  imageBaseUrl 
+}) => {
+  const ICON_BASE = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/Figma/Icons/';
+  const PLASHKA_DEFAULT = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/Figma/Icons/plashka_chuvashiya.png';
+  const PLASHKA_ZNAMENITOSTI = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/Figma/Icons/plashka_znamenitosti.png';
+  const CARD_BG = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/Figma/Card_main_big.png';
+  const TRAY_URL = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/Figma/Icons/Button_down_02.png';
   
-  const headerStyle: React.CSSProperties = {
-    width: '100%',
-    height: '5.73%',
-    display: 'grid',
-    gridTemplateColumns: '8.796% 10.185% 7.87% 46.296% 7.87% 10.185% 8.796%',
-    alignItems: 'center',
-    marginTop: '3.2%',
-    marginBottom: '3%'
-  };
+  const BTN_HOME_NEW = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/Figma/Icons/Button_back2.png';
+  const BTN_DICE_NEW = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/Figma/Icons/Button_dice2.png';
+  const CLOSE_ICON = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/Figma/Icons/close.png';
+  
+  const WIN_GOOD_BG = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/Figma/win/win_good.png';
+  const ALMS_GIF = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/Figma/gif/alms.gif';
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const BTN_NO_ACTION = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/Figma/Icons/Button_No%20action.png';
+  const BTN_OK_01 = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/Figma/Icons/Button_OK_01.png';
+  const BTN_OK_02 = 'https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/Figma/Icons/Button_OK_02.png';
+
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
+  const [isButtonPressed, setIsButtonPressed] = useState(false);
 
-  const currentQuestion = questions[currentIndex];
+  useEffect(() => {
+    setSelectedOption(null);
+    setShowFeedback(false);
+    setIsButtonPressed(false);
+  }, [question.id]);
 
   const getImageUrl = () => {
-    if (!currentQuestion) return '';
     const base = imageBaseUrl?.trim().endsWith('/') ? imageBaseUrl.trim() : `${imageBaseUrl?.trim()}/`;
-    return `${base}${currentQuestion.imageUrl}`;
+    const imgPath = question.imageUrl.startsWith('/') ? question.imageUrl.substring(1) : question.imageUrl;
+    return `${base}${imgPath}`;
   };
 
   const handleAnswer = (key: string) => {
@@ -53,107 +62,164 @@ const Quiz: React.FC<QuizProps> = ({ questions, categoryName, onBack, onNavigate
   };
 
   const checkAnswer = () => {
-    if (!selectedOption) return;
-    const correct = selectedOption === currentQuestion.correctAnswer;
+    if (!selectedOption || showFeedback) return;
+    const correct = selectedOption === question.correctAnswer;
     setIsCorrect(correct);
     setShowFeedback(true);
   };
 
-  const handleNext = () => {
-    setShowFeedback(false);
-    setSelectedOption(null);
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-    } else {
-      onBack();
-    }
+  const handleCloseFeedback = () => {
+    onAdvance();
+    onBack();
   };
 
-  if (!currentQuestion) return null;
+  const isCelebrityCategory = categoryId === 'znamenitosti';
+  const currentPlashka = isCelebrityCategory ? PLASHKA_ZNAMENITOSTI : PLASHKA_DEFAULT;
+
+  const headerStyle: React.CSSProperties = {
+    width: '100%',
+    height: '5.73%',
+    display: 'grid',
+    gridTemplateColumns: '8.796% 10.185% 7.87% 46.296% 7.87% 10.185% 8.796%',
+    alignItems: 'center',
+    marginTop: '3.2%',
+    position: 'relative',
+    zIndex: 40
+  };
+
+  const CARD_WIDTH = '93.333%';
+  const CARD_LEFT = '3.333%';
+
+  const SIDE_ZONE_RATIO = (64 / 372) * 100; 
+  const CENTER_ZONE_RATIO = (244 / 372) * 100;
+  
+  const OK_BTN_RATIO = 43; 
+  const SIDE_BTN_RATIO = 40; 
+
+  const getOkButtonImage = () => {
+    if (!selectedOption) return BTN_NO_ACTION;
+    if (isButtonPressed || showFeedback) return BTN_OK_02;
+    return BTN_OK_01;
+  };
+
+  const getQuestionFontSizeClass = () => {
+    const len = question.text.length;
+    if (len > 70) return 'text-[15px]';
+    if (len > 45) return 'text-[17px]';
+    return 'text-[20px]';
+  };
 
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
-      {/* Top Bar - Сетка */}
       <div style={headerStyle}>
         <div />
-        <button 
-          onClick={onNavigateToSettings} 
-          className="active:scale-90 transition-transform h-full w-full flex items-center justify-center"
-        >
+        <button onClick={onNavigateToSettings} className="active:scale-90 transition-transform h-full w-full flex items-center justify-center">
           <img src={`${ICON_BASE}Button_settings.png`} alt="Settings" className="w-full h-full object-contain" />
         </button>
         <div />
         <div className="h-full w-full flex items-center justify-center">
-          <img src={PLASHKA_URL} alt="Моя Чувашия" className="w-full h-[81.8%] object-contain" />
+          <img src={currentPlashka} alt={categoryName} className="w-full h-[81.8%] object-contain" />
         </div>
         <div />
-        <button className="active:scale-90 transition-transform h-full w-full flex items-center justify-center">
+        <button onClick={onBack} className="active:scale-90 transition-transform h-full w-full flex items-center justify-center">
           <img src={`${ICON_BASE}Button_menu.png`} alt="Menu" className="w-full h-full object-contain" />
         </button>
         <div />
       </div>
 
-      {/* Main Question Card */}
-      <div className="flex-1 mx-[8.8%] chuvash-card rounded-[3rem] p-6 flex flex-col items-center relative overflow-hidden shadow-xl mb-4">
-        <Ornament />
-        <div className="w-full aspect-[4/3] mb-4 overflow-hidden rounded-2xl flex items-center justify-center bg-transparent">
-          <img src={getImageUrl()} alt="Question" className="w-full h-full object-contain" />
-        </div>
-        <div className="text-center mb-6 px-4">
-          <h3 className="text-[#5d3a24] font-black text-lg md:text-xl leading-snug">{currentQuestion.text}</h3>
-        </div>
-        <div className="w-full space-y-2 mt-auto">
-          {Object.entries(currentQuestion.options).map(([key, text]) => {
-            const isSelected = selectedOption === key;
-            return (
-              <button
-                key={key}
-                disabled={showFeedback}
-                onClick={() => handleAnswer(key)}
-                className={`w-full py-2 px-6 text-left rounded-full font-black text-[#5d3a24] transition-colors border-2 ${
-                  isSelected ? 'bg-white border-white shadow-md' : 'bg-transparent border-transparent'
-                }`}
-              >
-                {text}
-              </button>
-            );
-          })}
+      <div className="absolute z-10 flex flex-col items-center" style={{ width: CARD_WIDTH, height: '91.5%', left: CARD_LEFT, bottom: '1.2%' }}>
+        <img src={CARD_BG} className="absolute inset-0 w-full h-full object-fill pointer-events-none drop-shadow-2xl" alt="Card BG" />
+        
+        {/* pb-[30%] гарантирует, что ответы будут выше трея. pt-[12.5%] возвращает фото на исходную высоту. */}
+        <div className="relative z-10 w-full h-full flex flex-col items-center pt-[12.5%] px-[10%] pb-[30%] gap-y-0">
+          
+          {/* Фотография: ширина 68% для экономии места по вертикали */}
+          <div className="w-[68%] aspect-[3.4/4.3] mb-2 overflow-hidden rounded-[2.5rem] relative flex-shrink-0 flex items-center justify-center bg-transparent shadow-[inset_0_2px_10px_rgba(0,0,0,0.1)]">
+             <img src={getImageUrl()} alt="Question" className="w-full h-full object-cover" />
+             <div className="absolute inset-0 rounded-[2.5rem] border-[1px] border-black/5 pointer-events-none"></div>
+          </div>
+          
+          {/* Текст вопроса: flex-1 забирает все свободное место в центре */}
+          <div className="flex-1 w-full px-2 flex flex-col justify-center items-center text-center overflow-hidden min-h-[3rem]">
+            <h2 className={`text-[#0a0a0a] font-bold ${getQuestionFontSizeClass()} leading-tight tracking-tight`}>
+              {question.text}
+            </h2>
+          </div>
+          
+          {/* Варианты ответов */}
+          <div className="w-full space-y-0.5 mt-1 flex-shrink-0">
+            {Object.entries(question.options).map(([key, text]) => {
+              const isSelected = selectedOption === key;
+              return (
+                <button
+                  key={key}
+                  disabled={showFeedback}
+                  onClick={() => handleAnswer(key)}
+                  className={`w-full py-1.5 px-6 text-left rounded-[1.2rem] font-bold text-[#0a0a0a] text-[15px] transition-all duration-150 ${isSelected ? 'bg-white shadow-md scale-[1.02]' : 'bg-transparent active:bg-white/10'}`}
+                >
+                  {text}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Bottom Nav */}
-      <div className="w-full flex justify-around items-center mb-6 px-4">
-        <button onClick={onBack} className="w-16 h-16 active:scale-90 transition-transform">
-          <img src={`${ICON_BASE}Button_back.png`} alt="Back" className="w-full h-full object-contain" />
-        </button>
-        <button onClick={checkAnswer} className={`w-24 h-24 bg-white/20 rounded-full flex items-center justify-center p-2 transition-opacity ${!selectedOption ? 'opacity-50' : 'opacity-100'}`}>
-          <div className="w-full h-full bg-[#e0e0e0] border-4 border-white rounded-full flex items-center justify-center shadow-inner">
-             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white shadow-lg">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="w-10 h-10"><polyline points="20 6 9 17 4 12"/></svg>
-             </div>
+      <div className="absolute bottom-0 left-0 w-full h-[15%] flex items-end justify-center pointer-events-none z-[60]">
+        <div className="relative h-full flex items-center justify-center pointer-events-auto" style={{ width: '93.333%' }}>
+          <img src={TRAY_URL} className="absolute inset-x-0 bottom-0 w-full h-full object-contain object-bottom" alt="Tray BG" />
+          <div className="relative w-full h-full flex items-center">
+            <div style={{ width: `${SIDE_ZONE_RATIO}%` }} className="h-full flex items-center justify-center">
+              <button onClick={onBack} style={{ width: `${SIDE_BTN_RATIO}%`, transform: 'translateX(320%)' }} className="aspect-square active:scale-90 transition-transform mb-[6.5%]">
+                <img src={BTN_HOME_NEW} className="w-full h-full object-contain" alt="Home" />
+              </button>
+            </div>
+            <div style={{ width: `${CENTER_ZONE_RATIO}%` }} className="h-full flex items-center justify-center">
+              <button 
+                onMouseDown={() => selectedOption && !showFeedback && setIsButtonPressed(true)}
+                onMouseUp={() => setIsButtonPressed(false)}
+                onMouseLeave={() => setIsButtonPressed(false)}
+                onClick={checkAnswer} 
+                disabled={!selectedOption || showFeedback}
+                style={{ width: `${OK_BTN_RATIO}%` }}
+                className={`aspect-square transition-all flex items-center justify-center ${selectedOption && !showFeedback ? 'cursor-pointer' : 'cursor-default'}`}
+              >
+                <img src={getOkButtonImage()} className="w-full h-full object-contain" alt="OK" />
+              </button>
+            </div>
+            <div style={{ width: `${SIDE_ZONE_RATIO}%` }} className="h-full flex items-center justify-center">
+              <button onClick={onNavigateToDice} style={{ width: `${SIDE_BTN_RATIO}%`, transform: 'translateX(-320%)' }} className="aspect-square active:scale-90 transition-transform mb-[6.5%]">
+                <img src={BTN_DICE_NEW} className="w-full h-full object-contain" alt="Dice" />
+              </button>
+            </div>
           </div>
-        </button>
-        <button className="w-16 h-16 active:scale-90 transition-transform">
-          <img src={`${ICON_BASE}Button_dice_yes.png`} alt="Dice" className="w-full h-full object-contain" />
-        </button>
+        </div>
       </div>
 
       {showFeedback && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-[320px] bg-white rounded-[3rem] p-8 relative flex flex-col items-center text-center shadow-2xl">
-            <button onClick={handleNext} className="absolute top-6 right-6 text-red-500">
-              <X size={32} strokeWidth={3} />
-            </button>
-            <div className="mb-6"><h2 className={`text-3xl font-black uppercase italic ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>{isCorrect ? 'отлично' : 'неверно'}</h2></div>
-            <p className="text-[#5d3a24] font-black text-xl mb-8">{isCorrect ? 'Получите награду' : 'Попробуйте еще раз'}</p>
-            <div className="w-32 h-32 mb-8 flex items-center justify-center">
-              {isCorrect ? <img src="https://raw.githubusercontent.com/fortnoxants2-afk/Chuvash/main/images/Figma/reward_icon.png" alt="Reward" className="w-full h-full object-contain" /> : <div className="text-red-500"><X size={80} strokeWidth={3} /></div>}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          {isCorrect ? (
+            <div className="relative w-full max-w-[340px] aspect-[556/650] flex flex-col items-center">
+              <img src={WIN_GOOD_BG} className="absolute inset-0 w-full h-full object-fill pointer-events-none" alt="Win BG" />
+              <button onClick={handleCloseFeedback} className="absolute top-[-2.8%] right-[-1.1%] w-[12.36%] aspect-square z-50 active:scale-90 transition-transform">
+                <img src={CLOSE_ICON} alt="Close" className="w-full h-full object-contain drop-shadow-sm" />
+              </button>
+              <div className="relative z-10 w-full h-full flex flex-col items-center pt-[62%] px-[10%]">
+                <div className="w-[58%] aspect-square flex items-center justify-center">
+                  <img src={ALMS_GIF} alt="Reward" className="w-full h-full object-contain" />
+                </div>
+              </div>
             </div>
-            <button onClick={handleNext} className="w-full py-4 bg-green-500 text-white rounded-2xl font-black text-xl shadow-lg active:scale-95 transition-transform">ДАЛЕЕ</button>
-          </div>
+          ) : (
+            <div className="w-full max-w-[340px] bg-[#f8f4f0] rounded-[3.5rem] p-10 flex flex-col items-center text-center shadow-2xl border-[6px] border-[#5d3a24]">
+              <h2 className="text-4xl font-black mb-3 text-red-600">ОШИБКА</h2>
+              <p className="text-[#5d3a24] font-black mb-10 text-lg leading-tight whitespace-pre-line">Ничего страшного,{"\n"}попробуйте еще раз!</p>
+              <button onClick={handleCloseFeedback} className="w-full py-4 bg-[#9ec4af] text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition-all">ДАЛЬШЕ</button>
+            </div>
+          )}
         </div>
       )}
-      <div className="absolute bottom-[1.5%] right-[5%] text-[#5d3a24] text-[12px] font-bold opacity-30">Версия 0.0.1</div>
+      <div className="absolute bottom-[0.5%] right-[5%] text-[#5d3a24] text-[10px] font-black opacity-30 z-[70]">Версия 0.0.1</div>
     </div>
   );
 };
