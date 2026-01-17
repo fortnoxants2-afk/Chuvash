@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
   <head>
@@ -37,17 +36,13 @@
         background-size: 100% 100%;
         background-position: center;
         background-repeat: no-repeat;
-        
-        /* Жесткие пропорции 1080x1920 */
         aspect-ratio: 1080 / 1920;
         height: 100vh;
         width: auto;
         position: relative;
         overflow: hidden;
-        border-radius: 0;
       }
 
-      /* Скрытие полосы прокрутки */
       .scrollbar-hide::-webkit-scrollbar {
         display: none;
       }
@@ -56,20 +51,23 @@
         scrollbar-width: none;
       }
     </style>
+
+<link rel="stylesheet" href="/index.css">
   <script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+  <script type="module" crossorigin src="./assets/index-DYeVtSX5.js"></script>
 </head>
   <body>
     <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
-</body>
+  </body>
 </html>
